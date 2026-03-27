@@ -144,8 +144,8 @@ class MainWindow(QtWidgets.QMainWindow):
 
         splitter.setStretchFactor(0, 0)
         splitter.setStretchFactor(1, 1)
-        right_splitter.setStretchFactor(0, 3)
-        right_splitter.setStretchFactor(1, 2)
+        right_splitter.setStretchFactor(0, 4)
+        right_splitter.setStretchFactor(1, 1)
 
     def _connect_signals(self) -> None:
         self.add_item_button.clicked.connect(self.add_item_row)
@@ -267,18 +267,16 @@ class MainWindow(QtWidgets.QMainWindow):
         )
 
     def update_controls(self) -> None:
+        self.run_button.setEnabled(True)
         try:
             validate_inputs(self._read_bin(), self._read_items())
         except ValidationError as exc:
-            self.run_button.setEnabled(False)
-            self.statusBar().showMessage(str(exc))
+            self.statusBar().showMessage(f"Invalid input: {exc}")
             return
         except Exception as exc:
-            self.run_button.setEnabled(False)
             self.statusBar().showMessage(f"Input parsing error: {exc}")
             return
 
-        self.run_button.setEnabled(True)
         self.statusBar().showMessage("Inputs are valid.")
 
     def run_solver(self) -> None:
@@ -304,7 +302,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 metrics.computation_time_ms,
             )
         except ValidationError as exc:
-            self.logger.error(str(exc))
+            self.logger.error("Cannot start palletization: %s", exc)
             QtWidgets.QMessageBox.warning(self, "Invalid Input", str(exc))
         except Exception as exc:
             self.logger.exception("Unexpected error during solve: %s", exc)
@@ -448,3 +446,5 @@ def create_application() -> QtWidgets.QApplication:
     application.setApplicationName("2D Palletization Benchmark")
     application.setStyle("Fusion")
     return application
+
+
