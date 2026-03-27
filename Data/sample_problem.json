@@ -1,0 +1,30 @@
+﻿{
+  "bin": {
+    "width": 1200,
+    "height": 800,
+    "gap": 20
+  },
+  "items": [
+    {
+      "name": "Box A",
+      "width": 300,
+      "height": 200,
+      "quantity": 4,
+      "can_rotate": true
+    },
+    {
+      "name": "Box B",
+      "width": 250,
+      "height": 180,
+      "quantity": 5,
+      "can_rotate": true
+    },
+    {
+      "name": "Box C",
+      "width": 180,
+      "height": 120,
+      "quantity": 6,
+      "can_rotate": false
+    }
+  ]
+}
