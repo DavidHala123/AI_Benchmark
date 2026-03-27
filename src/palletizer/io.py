@@ -33,6 +33,29 @@ def load_problem_from_json(path: str | Path) -> tuple[BinConfig, list[ItemType]]
     return bin_config, items
 
 
+def save_problem_to_json(path: str | Path, bin_config: BinConfig, items: list[ItemType]) -> None:
+    """Persist the current input configuration to JSON."""
+
+    payload: dict[str, Any] = {
+        "bin": {
+            "width": bin_config.width,
+            "height": bin_config.height,
+            "gap": bin_config.gap,
+        },
+        "items": [
+            {
+                "name": item.name,
+                "width": item.width,
+                "height": item.height,
+                "quantity": item.quantity,
+                "can_rotate": item.can_rotate,
+            }
+            for item in items
+        ],
+    }
+    Path(path).write_text(json.dumps(payload, indent=2), encoding="utf-8-sig")
+
+
 def save_result_to_json(path: str | Path, result: SolveResult) -> None:
     """Persist a solver result to JSON."""
 
@@ -62,4 +85,3 @@ def save_result_to_json(path: str | Path, result: SolveResult) -> None:
         },
     }
     Path(path).write_text(json.dumps(payload, indent=2), encoding="utf-8-sig")
-

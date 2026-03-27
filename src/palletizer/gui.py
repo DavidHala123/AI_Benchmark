@@ -8,7 +8,7 @@ from pathlib import Path
 from PyQt5 import QtCore, QtGui, QtWidgets
 
 from src.palletizer.exceptions import ValidationError
-from src.palletizer.io import load_problem_from_json, save_result_to_json
+from src.palletizer.io import load_problem_from_json, save_problem_to_json
 from src.palletizer.logging_utils import configure_logger
 from src.palletizer.models import BinConfig, ItemType, Placement, SolveResult, UnplacedItem
 from src.palletizer.solver import solve_palletization
@@ -91,9 +91,9 @@ class MainWindow(QtWidgets.QMainWindow):
 
         io_row = QtWidgets.QHBoxLayout()
         self.load_json_button = QtWidgets.QPushButton("Load JSON")
-        self.save_result_button = QtWidgets.QPushButton("Save Result JSON")
+        self.save_config_button = QtWidgets.QPushButton("Save JSON")
         io_row.addWidget(self.load_json_button)
-        io_row.addWidget(self.save_result_button)
+        io_row.addWidget(self.save_config_button)
         left_layout.addLayout(io_row)
 
         controls_group = QtWidgets.QGroupBox("Controls")
@@ -154,7 +154,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.reset_button.clicked.connect(self.reset_scene)
         self.clear_logger_button.clicked.connect(self.logger_text.clear)
         self.load_json_button.clicked.connect(self.load_json)
-        self.save_result_button.clicked.connect(self.save_result)
+        self.save_config_button.clicked.connect(self.save_configuration)
         self.items_table.itemChanged.connect(self.update_controls)
         for spinbox in (self.bin_width_spin, self.bin_height_spin, self.gap_spin):
             spinbox.valueChanged.connect(self.update_controls)
@@ -413,25 +413,21 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.update_controls()
 
-    def save_result(self) -> None:
-        if self.result is None:
-            QtWidgets.QMessageBox.information(self, "No Result", "Run the solver before saving the result.")
-            return
-
+    def save_configuration(self) -> None:
         path, _ = QtWidgets.QFileDialog.getSaveFileName(
             self,
-            "Save Result JSON",
-            str(Path.cwd() / "result.json"),
+            "Save JSON Configuration",
+            str(Path.cwd() / "config.json"),
             "JSON files (*.json)",
         )
         if not path:
             return
 
         try:
-            save_result_to_json(path, self.result)
-            self.logger.info("Saved result to %s", path)
+            save_problem_to_json(path, self._read_bin(), self._read_items())
+            self.logger.info("Saved configuration to %s", path)
         except Exception as exc:
-            self.logger.exception("Failed to save result: %s", exc)
+            self.logger.exception("Failed to save configuration: %s", exc)
             QtWidgets.QMessageBox.critical(self, "Save Error", str(exc))
 
     def closeEvent(self, event: QtGui.QCloseEvent) -> None:
@@ -446,5 +442,3 @@ def create_application() -> QtWidgets.QApplication:
     application.setApplicationName("2D Palletization Benchmark")
     application.setStyle("Fusion")
     return application
-
-

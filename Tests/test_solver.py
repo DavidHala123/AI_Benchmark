@@ -1,6 +1,9 @@
 ﻿"""Unit tests for the palletization solver."""
 
+from pathlib import Path
+
 from src.palletizer.exceptions import ValidationError
+from src.palletizer.io import load_problem_from_json, save_problem_to_json
 from src.palletizer.models import BinConfig, ItemType
 from src.palletizer.solver import solve_palletization
 from src.palletizer.validation import validate_inputs
@@ -69,3 +72,18 @@ def test_solver_prefers_larger_area_over_many_small_items() -> None:
     assert result.metrics.placed_area == 8100
     assert result.metrics.placed_count == 1
     assert result.placements[0].item_name == "Large"
+
+
+def test_problem_json_roundtrip(tmp_path: Path) -> None:
+    path = tmp_path / 'config.json'
+    bin_config = BinConfig(width=1200, height=800, gap=20)
+    items = [
+        ItemType(name='Box A', width=300, height=200, quantity=4, can_rotate=True),
+        ItemType(name='Box B', width=250, height=180, quantity=5, can_rotate=False),
+    ]
+
+    save_problem_to_json(path, bin_config, items)
+    loaded_bin, loaded_items = load_problem_from_json(path)
+
+    assert loaded_bin == bin_config
+    assert loaded_items == items
